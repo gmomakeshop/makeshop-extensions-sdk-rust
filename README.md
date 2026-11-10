@@ -160,7 +160,7 @@ Connectorを使わない場合は`connectors: []`とします。
 ## リポジトリについて
 
 このリポジトリは配布用のスナップショットです。
-Issueは受け付けていますが、Pull Requestは受け付けていません。
+IssueとPull Requestは受け付けていません。
 Releaseはcrates.ioへ公開されます。
 
 ## ライセンス
