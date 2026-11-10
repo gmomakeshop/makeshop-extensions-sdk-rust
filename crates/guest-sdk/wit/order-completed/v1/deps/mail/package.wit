@@ -1,0 +1,72 @@
+package makeshop:mail@1.0.0;
+
+// Reservation of mails that the platform sends on behalf of the shop.
+// Only event worlds import this package: a mail is a side effect, and the platform
+// sends it only after the event handler has completed.
+interface buyer {
+  // MailBodyFormat tells how the caller sends the body.
+  enum mail-body-format {
+    // Sent as plain text.
+    text,
+    // Sent as an HTML document. The runtime does not validate or sanitize the markup.
+    html,
+  }
+
+  // BuyerMail is a mail reserved for the buyer of the delivered order.
+  // The runtime does not send it. It hands the reservation to the caller together
+  // with a successful delivery result, and the caller sends it to the buyer's
+  // address on record after the delivery is committed.
+  record buyer-mail {
+    // Names the mail within the delivery, such as "order-thanks", and identifies the
+    // reservation in the run log. It is 1 to 128 ASCII characters: letters, digits,
+    // '.', '_', ':', and '-'. Unique within one run.
+    operation-key: string,
+    // Subject line. It must contain a non-whitespace character, is limited in length, and
+    // must not contain control characters or invisible formatting characters: zero width
+    // space (U+200B), byte order mark (U+FEFF), and the bidirectional marks, embeddings,
+    // overrides, and isolates (U+200E, U+200F, U+202A to U+202E, and U+2066 to U+2069).
+    // Zero width joiner (U+200D) is allowed.
+    // Mail variables are not expanded.
+    subject: string,
+    // How the caller sends the body.
+    format: mail-body-format,
+    // The body, sent in the given format. It must contain a non-whitespace character, is
+    // limited in size, and must not contain control characters other than tab, line feed,
+    // and carriage return.
+    //
+    // The caller replaces two mail variables in the body: [MAIL_HEAD] with the shop's
+    // common mail header and [MAIL_TAIL] with its common mail footer, both inserted as the
+    // shop set them. A shop without them set gets an empty string. The rest of the body,
+    // including any other bracketed text, is sent as it is.
+    body: string,
+  }
+
+  enum mail-error-code {
+    // The operation key is empty, longer than 128 characters, contains a character
+    // other than ASCII letters, digits, '.', '_', ':', and '-', or repeats a key
+    // already reserved in this run.
+    operation-key-invalid,
+    // The subject is empty or whitespace only, too long, or contains a control character
+    // or an invisible formatting character.
+    subject-invalid,
+    // The body is empty or whitespace only, too large, or contains a control character
+    // other than tab, line feed, and carriage return.
+    body-invalid,
+    // This run has reached the number of mails it may reserve.
+    limit-exceeded,
+  }
+
+  record mail-error {
+    code: mail-error-code,
+    message: string,
+  }
+
+  // SendToBuyer reserves a mail to the buyer of the delivered order.
+  // The reservation takes effect only when deliver returns ok; a retry, a dead-letter,
+  // a guest error, or a runtime failure discards every reservation of the run.
+  // A delivery succeeds at most once, so its mails are sent at most once.
+  // A failure to send the mail later does not change the delivery result.
+  //
+  // The mail is sent regardless of whether the buyer allows the shop's mail magazine.
+  send-to-buyer: func(req: buyer-mail) -> result<_, mail-error>;
+}

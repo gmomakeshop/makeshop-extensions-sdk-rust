@@ -1,0 +1,19 @@
+package makeshop:runtime-types@1.0.0;
+
+interface common {
+  record guest-error {
+    code: string,
+    message: string,
+  }
+
+  // ShopMetafieldEntry represents a metafield configured for a shop.
+  // The value is not validated; the guest must interpret it according to content-type.
+  record shop-metafield-entry {
+    namespace: string,
+    key: string,
+    // The media type of value, normalized to lowercase with surrounding whitespace removed.
+    content-type: string,
+    // UTF-8 text encoded according to content-type.
+    value: string,
+  }
+}

@@ -1,0 +1,22 @@
+# Secret scanning configuration for the published SDK.
+#
+# This file is copied into the distribution root, so the same rules apply in two places:
+# the check that runs before a distribution is published, and the mirror repository that
+# receives it. Keeping one file for both means the rules cannot drift apart.
+#
+# The allowlist stays minimal on purpose. Every entry widens what a scan will miss, so add
+# one only for a path that carries no source of its own.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Build output"
+
+# Compiler output. It is git-ignored, so it never reaches the mirror, but it does exist in
+# a working copy and would otherwise dominate the scan.
+# The pattern is not anchored at the start: a scan run from the mirror root sees
+# "target/...", while the check that runs before publishing sees "dist/sdk-rust/target/...".
+paths = [
+  '''(^|/)target/''',
+]

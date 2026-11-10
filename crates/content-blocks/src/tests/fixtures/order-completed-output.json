@@ -1,0 +1,15 @@
+{
+  "schema-version": 1,
+  "fragments": [
+    {
+      "placement": "main",
+      "blocks-json": "[{\"type\":\"alert\",\"variant\":\"success\",\"blocks\":[{\"type\":\"heading\",\"text\":\"クーポンを配布しました\",\"level\":2},{\"type\":\"text\",\"spans\":[{\"text\":\"次回のお買い物で \"},{\"text\":\"10% OFF\",\"strong\":true},{\"text\":\" として利用できます。\"}]},{\"type\":\"copyable\",\"label\":\"クーポンコード\",\"value\":\"THANKS-10\"}]},{\"type\":\"fields\",\"entries\":[{\"label\":\"有効期限\",\"value\":\"2026-08-31\"},{\"label\":\"対象\",\"value\":\"通常商品\"},{\"label\":\"利用条件\",\"value\":\"税込3,000円以上\"}]},{\"type\":\"section\",\"heading\":\"おすすめ商品\",\"blocks\":[{\"type\":\"text\",\"spans\":[{\"text\":\"今回のご注文内容に近い商品をピックアップしました。\"}]},{\"type\":\"grid\",\"columns-hint\":3,\"items\":[{\"type\":\"card\",\"title\":\"スタッフおすすめ A\",\"image\":{\"url\":\"https://cdn.example.com/pick-a.png\",\"alt\":\"スタッフおすすめ A\"},\"link\":{\"text\":\"商品を見る\",\"url\":\"https://example.com/items/pick-a\"}},{\"type\":\"card\",\"title\":\"スタッフおすすめ B\",\"image\":{\"url\":\"https://cdn.example.com/pick-b.png\",\"alt\":\"スタッフおすすめ B\"},\"link\":{\"text\":\"商品を見る\",\"url\":\"https://example.com/items/pick-b\"}},{\"type\":\"card\",\"title\":\"スタッフおすすめ C\",\"image\":{\"url\":\"https://cdn.example.com/pick-c.png\",\"alt\":\"スタッフおすすめ C\"},\"link\":{\"text\":\"商品を見る\",\"url\":\"https://example.com/items/pick-c\"}}]}]},{\"type\":\"card\",\"title\":\"レビュー投稿キャンペーン\",\"body\":[{\"text\":\"レビュー投稿で次回使えるポイントをプレゼントします。\"}],\"image\":{\"url\":\"https://cdn.example.com/review-campaign.png\",\"alt\":\"レビュー投稿キャンペーン\"},\"link\":{\"text\":\"レビューを書く\",\"url\":\"https://example.com/review\",\"prominence\":\"primary\"}},{\"type\":\"accordion\",\"summary\":\"返品・交換について\",\"blocks\":[{\"type\":\"list\",\"style\":\"bullet\",\"items\":[[{\"text\":\"商品到着後7日以内にご連絡ください。\"}],[{\"text\":\"開封済み商品は対象外になる場合があります。\"}]]},{\"type\":\"link\",\"text\":\"返品ポリシーを見る\",\"url\":\"https://example.com/returns\",\"prominence\":\"secondary\"}]},{\"type\":\"qr\",\"value\":\"https://example.com/redeem/THANKS-10\",\"caption\":\"店舗で利用する場合はこのQRを提示してください\"},{\"type\":\"badge\",\"variant\":\"info\",\"text\":\"期間限定\"}]"
+    }
+  ],
+  "data": [
+    {
+      "key": "coupon.code",
+      "value-json": "\"THANKS-10\""
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+package makeshop:event-types@1.0.0;
+
+// Types shared by all event deliveries.
+interface types {
+  // DeliveryContext identifies a single delivery attempt.
+  record delivery-context {
+    shop-id: string,
+    subscription-id: string,
+    delivery-id: string,
+    delivery-attempt: u32,
+  }
+
+  record event-metadata {
+    event-id: string,
+    event-type: string,
+    event-schema-version: u32,
+    source: string,
+    subject: string,
+    occurred-at: string,
+    published-at: string,
+    sequence-number: option<u64>,
+    correlation-id: option<string>,
+    causation-id: option<string>,
+    replay-id: option<string>,
+  }
+
+  record delivery-failure {
+    // Message describes the failure for diagnosis; its contents do not affect delivery behavior.
+    message: string,
+  }
+
+  variant delivery-result {
+    ok,
+    retry(delivery-failure),
+    dead-letter(delivery-failure),
+  }
+}

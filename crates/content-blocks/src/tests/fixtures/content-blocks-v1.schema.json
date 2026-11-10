@@ -1,0 +1,1169 @@
+{
+  "$id": "https://makeshop.dev/schemas/managed-runtime/content-blocks-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContentBlocksV1",
+  "description": "A single fragment's Content Blocks array. Runtime validation additionally checks UTF-8 byte limits, URL hygiene, table row widths, and limits across fragments.",
+  "type": "array",
+  "examples": [
+    [
+      {
+        "spans": [
+          {
+            "text": "Thank you for your order."
+          }
+        ],
+        "type": "text"
+      }
+    ]
+  ],
+  "items": {
+    "$ref": "#/$defs/Block"
+  },
+  "maxItems": 64,
+  "x-block-payloads": {
+    "accordion": {
+      "$ref": "#/$defs/Accordion"
+    },
+    "alert": {
+      "$ref": "#/$defs/Alert"
+    },
+    "badge": {
+      "$ref": "#/$defs/Badge"
+    },
+    "card": {
+      "$ref": "#/$defs/Card"
+    },
+    "copyable": {
+      "$ref": "#/$defs/Copyable"
+    },
+    "divider": {
+      "$ref": "#/$defs/Divider"
+    },
+    "fields": {
+      "$ref": "#/$defs/Fields"
+    },
+    "grid": {
+      "$ref": "#/$defs/Grid"
+    },
+    "heading": {
+      "$ref": "#/$defs/Heading"
+    },
+    "image": {
+      "$ref": "#/$defs/Image"
+    },
+    "link": {
+      "$ref": "#/$defs/Link"
+    },
+    "list": {
+      "$ref": "#/$defs/List"
+    },
+    "qr": {
+      "$ref": "#/$defs/Qr"
+    },
+    "section": {
+      "$ref": "#/$defs/Section"
+    },
+    "table": {
+      "$ref": "#/$defs/Table"
+    },
+    "text": {
+      "$ref": "#/$defs/Text"
+    }
+  },
+  "x-schema-version": 1,
+  "$defs": {
+    "Accordion": {
+      "description": "Collapsible content.",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "description": "Leaf blocks shown when the content is expanded.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Leaf"
+          },
+          "minItems": 1
+        },
+        "summary": {
+          "description": "Summary shown while the content is collapsed.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "blocks"
+      ]
+    },
+    "Alert": {
+      "description": "A container for notices and guidance.",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "description": "Leaf blocks displayed inside the container.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Leaf"
+          },
+          "minItems": 1
+        },
+        "variant": {
+          "description": "Presentation intent.",
+          "$ref": "#/$defs/Variant"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "variant",
+        "blocks"
+      ]
+    },
+    "Badge": {
+      "description": "A short label representing a rank, restriction, status, or similar property.",
+      "type": "object",
+      "properties": {
+        "text": {
+          "description": "Text displayed in the label.",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "variant": {
+          "description": "Presentation intent of the label.",
+          "$ref": "#/$defs/Variant"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "variant",
+        "text"
+      ]
+    },
+    "Block": {
+      "description": "Any block supported by Content Blocks v1.\n\nIn JSON, the `type` field identifies the block type.",
+      "oneOf": [
+        {
+          "description": "A heading.",
+          "type": "object",
+          "properties": {
+            "level": {
+              "description": "Heading level.",
+              "type": "integer",
+              "format": "uint8",
+              "maximum": 3,
+              "minimum": 1
+            },
+            "text": {
+              "description": "Heading text.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "heading"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text",
+            "level"
+          ]
+        },
+        {
+          "description": "A paragraph.",
+          "type": "object",
+          "properties": {
+            "spans": {
+              "description": "Spans to display.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Span"
+              },
+              "minItems": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "text"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "spans"
+          ]
+        },
+        {
+          "description": "A collection of labels and values.",
+          "type": "object",
+          "properties": {
+            "entries": {
+              "description": "Labels and values to display.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/FieldEntry"
+              },
+              "maxItems": 16,
+              "minItems": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "fields"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "entries"
+          ]
+        },
+        {
+          "description": "A value that can be copied.",
+          "type": "object",
+          "properties": {
+            "label": {
+              "description": "Label describing the value.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "copyable"
+            },
+            "value": {
+              "description": "Value to copy.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "description": "A link.",
+          "type": "object",
+          "properties": {
+            "prominence": {
+              "description": "Visual prominence.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Prominence"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "Link text.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "link"
+            },
+            "url": {
+              "description": "HTTPS destination URL.",
+              "type": "string",
+              "pattern": "^https://[^/?#]+"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text",
+            "url"
+          ]
+        },
+        {
+          "description": "An image.",
+          "type": "object",
+          "properties": {
+            "alt": {
+              "description": "Alternative text for the image.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "image"
+            },
+            "url": {
+              "description": "HTTPS URL of the image.",
+              "type": "string",
+              "pattern": "^https://[^/?#]+"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "url",
+            "alt"
+          ]
+        },
+        {
+          "description": "A divider.",
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "divider"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "description": "A table.",
+          "type": "object",
+          "properties": {
+            "columns": {
+              "description": "Column headings.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024,
+                "minLength": 1
+              },
+              "maxItems": 6,
+              "minItems": 1
+            },
+            "rows": {
+              "description": "Table rows. Each row must contain the same number of cells as there are columns.",
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 1
+                },
+                "maxItems": 6,
+                "minItems": 1
+              },
+              "maxItems": 20,
+              "minItems": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "table"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "columns",
+            "rows"
+          ]
+        },
+        {
+          "description": "A bulleted or numbered list.",
+          "type": "object",
+          "properties": {
+            "items": {
+              "description": "List items.",
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Span"
+                },
+                "minItems": 1
+              },
+              "maxItems": 16,
+              "minItems": 1
+            },
+            "style": {
+              "description": "Marker style.",
+              "$ref": "#/$defs/ListStyle"
+            },
+            "type": {
+              "type": "string",
+              "const": "list"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "style",
+            "items"
+          ]
+        },
+        {
+          "description": "A card.",
+          "type": "object",
+          "properties": {
+            "body": {
+              "description": "Card body.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/Span"
+              },
+              "minItems": 1
+            },
+            "image": {
+              "description": "Image displayed on the card.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Image"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "link": {
+              "description": "Link opened from the card.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Link"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": {
+              "description": "Card title.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "card"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "title"
+          ]
+        },
+        {
+          "description": "A short label.",
+          "type": "object",
+          "properties": {
+            "text": {
+              "description": "Text displayed in the label.",
+              "type": "string",
+              "maxLength": 64,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "badge"
+            },
+            "variant": {
+              "description": "Presentation intent of the label.",
+              "$ref": "#/$defs/Variant"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "variant",
+            "text"
+          ]
+        },
+        {
+          "description": "A QR code.",
+          "type": "object",
+          "properties": {
+            "caption": {
+              "description": "Caption displayed with the QR code.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "qr"
+            },
+            "value": {
+              "description": "Value encoded in the QR code.",
+              "type": "string",
+              "maxLength": 512,
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "description": "A container for notices and guidance.",
+          "type": "object",
+          "properties": {
+            "blocks": {
+              "description": "Leaf blocks displayed inside the container.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Leaf"
+              },
+              "minItems": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "alert"
+            },
+            "variant": {
+              "description": "Presentation intent.",
+              "$ref": "#/$defs/Variant"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "variant",
+            "blocks"
+          ]
+        },
+        {
+          "description": "A group of content with an optional heading.",
+          "type": "object",
+          "properties": {
+            "blocks": {
+              "description": "Blocks displayed in the section. A section cannot contain another section.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SectionChild"
+              },
+              "minItems": 1
+            },
+            "heading": {
+              "description": "Optional heading.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "section"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "blocks"
+          ]
+        },
+        {
+          "description": "A container that displays cards or images in a grid.",
+          "type": "object",
+          "properties": {
+            "columns-hint": {
+              "description": "Preferred column count. The rendered column count may vary by display environment.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint8",
+              "maximum": 4,
+              "minimum": 2
+            },
+            "items": {
+              "description": "Cards or images to display.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/GridItem"
+              },
+              "maxItems": 12,
+              "minItems": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "grid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "items"
+          ]
+        },
+        {
+          "description": "Collapsible content.",
+          "type": "object",
+          "properties": {
+            "blocks": {
+              "description": "Leaf blocks shown when the content is expanded.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Leaf"
+              },
+              "minItems": 1
+            },
+            "summary": {
+              "description": "Summary shown while the content is collapsed.",
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "type": {
+              "type": "string",
+              "const": "accordion"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "summary",
+            "blocks"
+          ]
+        }
+      ]
+    },
+    "Card": {
+      "description": "A card containing a title, body, image, and link.\n\nImages and links use [`Image`] and [`Link`], respectively.",
+      "type": "object",
+      "properties": {
+        "body": {
+          "description": "Card body.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1
+        },
+        "image": {
+          "description": "Image displayed on the card.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Image"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "link": {
+          "description": "Link opened from the card.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Link"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title": {
+          "description": "Card title.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ]
+    },
+    "Copyable": {
+      "description": "A value that provides a copy action.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Label describing the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024,
+          "minLength": 1
+        },
+        "value": {
+          "description": "Value to copy.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ]
+    },
+    "Divider": {
+      "description": "A divider.",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "FieldEntry": {
+      "description": "A label-value pair displayed in a fields block.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "Label describing the value.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        },
+        "value": {
+          "description": "Value to display.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "value"
+      ]
+    },
+    "Fields": {
+      "description": "A block that displays labels alongside their values.",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "description": "Labels and values to display.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldEntry"
+          },
+          "maxItems": 16,
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "entries"
+      ]
+    },
+    "Grid": {
+      "description": "A container that displays cards or images in a grid.",
+      "type": "object",
+      "properties": {
+        "columns-hint": {
+          "description": "Preferred column count. The rendered column count may vary by display environment.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "maximum": 4,
+          "minimum": 2
+        },
+        "items": {
+          "description": "Cards or images to display.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GridItem"
+          },
+          "maxItems": 12,
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ]
+    },
+    "GridItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Block"
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "image",
+                "card"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Heading": {
+      "description": "A heading.",
+      "type": "object",
+      "properties": {
+        "level": {
+          "description": "Heading level.",
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 3,
+          "minimum": 1
+        },
+        "text": {
+          "description": "Heading text.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "level"
+      ]
+    },
+    "Image": {
+      "description": "An image.",
+      "type": "object",
+      "properties": {
+        "alt": {
+          "description": "Alternative text for the image.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        },
+        "url": {
+          "description": "HTTPS URL of the image.",
+          "type": "string",
+          "pattern": "^https://[^/?#]+"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "alt"
+      ]
+    },
+    "Leaf": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Block"
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "heading",
+                "text",
+                "fields",
+                "copyable",
+                "link",
+                "image",
+                "divider",
+                "table",
+                "list",
+                "card",
+                "badge",
+                "qr"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Link": {
+      "description": "A link to another page.",
+      "type": "object",
+      "properties": {
+        "prominence": {
+          "description": "Visual prominence.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Prominence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "description": "Link text.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        },
+        "url": {
+          "description": "HTTPS destination URL.",
+          "type": "string",
+          "pattern": "^https://[^/?#]+"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "url"
+      ]
+    },
+    "List": {
+      "description": "A bulleted or numbered list.\n\nEach item is a vector of spans. Lists cannot be nested.",
+      "type": "object",
+      "properties": {
+        "items": {
+          "description": "List items.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Span"
+            },
+            "minItems": 1
+          },
+          "maxItems": 16,
+          "minItems": 1
+        },
+        "style": {
+          "description": "Marker style.",
+          "$ref": "#/$defs/ListStyle"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "style",
+        "items"
+      ]
+    },
+    "ListStyle": {
+      "description": "Marker style for a list block.",
+      "oneOf": [
+        {
+          "description": "A bulleted list.",
+          "type": "string",
+          "const": "bullet"
+        },
+        {
+          "description": "A numbered list.",
+          "type": "string",
+          "const": "ordered"
+        }
+      ]
+    },
+    "Prominence": {
+      "description": "Visual prominence of a link.",
+      "oneOf": [
+        {
+          "description": "A primary action.",
+          "type": "string",
+          "const": "primary"
+        },
+        {
+          "description": "A secondary action.",
+          "type": "string",
+          "const": "secondary"
+        }
+      ]
+    },
+    "Qr": {
+      "description": "A value rendered as a QR code.",
+      "type": "object",
+      "properties": {
+        "caption": {
+          "description": "Caption displayed with the QR code.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024,
+          "minLength": 1
+        },
+        "value": {
+          "description": "Value encoded in the QR code.",
+          "type": "string",
+          "maxLength": 512,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ]
+    },
+    "Section": {
+      "description": "A group of content with an optional heading.",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "description": "Blocks displayed in the section. A section cannot contain another section.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SectionChild"
+          },
+          "minItems": 1
+        },
+        "heading": {
+          "description": "Optional heading.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "blocks"
+      ]
+    },
+    "SectionChild": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Block"
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "heading",
+                "text",
+                "fields",
+                "copyable",
+                "link",
+                "image",
+                "divider",
+                "table",
+                "list",
+                "card",
+                "badge",
+                "qr",
+                "alert",
+                "grid",
+                "accordion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Span": {
+      "description": "A span within a text block.",
+      "type": "object",
+      "properties": {
+        "emphasis": {
+          "description": "Whether to apply weak emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "strong": {
+          "description": "Whether to apply strong emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "text": {
+          "description": "Text to display.",
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "Table": {
+      "description": "A table containing column headings and rows.\n\n[`Table::columns`] checks at compile time that the number of cells in each row matches the\nnumber of columns. Use [`Table::try_new`] when the column count is determined at runtime.",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "description": "Column headings.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1
+          },
+          "maxItems": 6,
+          "minItems": 1
+        },
+        "rows": {
+          "description": "Table rows. Each row must contain the same number of cells as there are columns.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            },
+            "maxItems": 6,
+            "minItems": 1
+          },
+          "maxItems": 20,
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "columns",
+        "rows"
+      ]
+    },
+    "Text": {
+      "description": "A paragraph.",
+      "type": "object",
+      "properties": {
+        "spans": {
+          "description": "Spans to display.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "spans"
+      ]
+    },
+    "Variant": {
+      "description": "Presentation intent for alerts and badges.\n\nColors and other styling are determined by the display environment.",
+      "oneOf": [
+        {
+          "description": "Default style of the display environment.",
+          "type": "string",
+          "const": "auto"
+        },
+        {
+          "description": "Informational content.",
+          "type": "string",
+          "const": "info"
+        },
+        {
+          "description": "Successful outcome.",
+          "type": "string",
+          "const": "success"
+        },
+        {
+          "description": "Warning or caution.",
+          "type": "string",
+          "const": "warning"
+        }
+      ]
+    }
+  }
+}

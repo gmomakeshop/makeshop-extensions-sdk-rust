@@ -1,0 +1,107 @@
+package makeshop:runtime-host@1.0.0;
+
+interface logging {
+  debug: func(message: string, attrs-json: string);
+  info: func(message: string, attrs-json: string);
+  warn: func(message: string, attrs-json: string);
+  error: func(message: string, attrs-json: string);
+}
+
+interface connector {
+  enum payload-format {
+    json,
+    xml,
+    text,
+    binary,
+  }
+
+  record header {
+    name: string,
+    value: string,
+  }
+
+  // ConnectorRequest represents a request sent to a connector.
+  // The body format is specified by the content-type in the configuration or additional-headers.
+  record connector-request {
+    connector: string,
+    body: list<u8>,
+    additional-headers: list<header>,
+    timeout-hint-ms: option<u32>,
+  }
+
+  // ConnectorResponse represents an HTTP response the runtime received, whatever its status.
+  record connector-response {
+    // The HTTP status the upstream returned. A 4xx or 5xx arrives here, not as an error.
+    status: u16,
+    format: payload-format,
+    body: list<u8>,
+    headers: list<header>,
+    upstream-trace-id: option<string>,
+  }
+
+  enum connector-error-code {
+    // No connector with that name is configured.
+    not-found,
+    // The call did not finish within its deadline. The upstream may have processed the
+    // request already, so retrying is only safe for an idempotent operation.
+    timeout,
+    // The request never reached the upstream application: name resolution, the TCP
+    // connection or the TLS handshake failed, or a secret the connector refers to could
+    // not be resolved. Retrying is safe even when the operation is not idempotent.
+    connect-error,
+    // The connection broke after the request was sent, including a failure while reading
+    // the response. The upstream may have processed the request already, so retrying is
+    // only safe for an idempotent operation.
+    network-error,
+    // The request was rejected before it was sent: an invalid connector name, header or
+    // body. Retrying the same request fails the same way.
+    payload-invalid,
+    // The response exceeded the size the runtime reads.
+    response-too-large,
+    // No in-flight slot became free before the deadline.
+    concurrency-limited,
+    // This run has used up its connector call budget.
+    connector-limit-exceeded,
+  }
+
+  // ConnectorError reports a call that produced no HTTP response.
+  //
+  // An HTTP response is never an error here, whatever its status: a 4xx or 5xx comes back
+  // as a connector-response, and its status field carries the code.
+  record connector-error {
+    code: connector-error-code,
+    message: string,
+    // The status the upstream returned, when its response headers arrived before the call
+    // failed. That happens while reading the response: it exceeded the size limit, the
+    // connection broke, or the deadline passed. Absent whenever no response reached the
+    // runtime, which is every other failure.
+    //
+    // This reports what happened; it does not say the call may be re-sent. Read the code
+    // for that.
+    upstream-status: option<u16>,
+  }
+
+  // Call invokes a connector once.
+  call: func(req: connector-request) -> result<connector-response, connector-error>;
+
+  // CallBatch invokes multiple connectors concurrently.
+  // Results remain in request order and contain either a response or an error for each request.
+  call-batch: func(reqs: list<connector-request>) -> list<result<connector-response, connector-error>>;
+}
+
+interface execution {
+  // ExecutionContext contains metadata for a single guest extension run.
+  // Timestamps are expressed as Unix time in milliseconds.
+  record execution-context {
+    run-id: string,
+    started-at-unix-ms: u64,
+    deadline-unix-ms: u64,
+  }
+
+  get-context: func() -> execution-context;
+}
+
+interface uuid {
+  generate-uuid-v7: func() -> string;
+  generate-uuid-v4: func() -> string;
+}

@@ -1,0 +1,29 @@
+[package]
+name = "makeshop-extensions-content-blocks"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+description = "Content Blocks vocabulary for makeshop Extensions: types, builders, and validation."
+repository = "https://github.com/gmomakeshop/makeshop-extensions-sdk-rust"
+readme = "README.md"
+keywords = ["makeshop", "extensions", "ecommerce", "content", "wasm"]
+categories = ["wasm", "web-programming", "data-structures"]
+license = "Apache-2.0"
+
+# Only the package name carries the `makeshop-extensions-` prefix. The library keeps the
+# short name, so `use content_blocks::…` stays readable.
+[lib]
+name = "content_blocks"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+schemars = { workspace = true, optional = true }
+
+[features]
+# Schema generation is optional and is not linked into guest components by default.
+schema = ["dep:schemars"]
+
+# Documents the `schema` feature, which is off by default.
+[package.metadata.docs.rs]
+all-features = true

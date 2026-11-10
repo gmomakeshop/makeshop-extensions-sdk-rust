@@ -1,0 +1,63 @@
+package makeshop:order-completed-content@1.0.0;
+
+// A hook that returns content for the order completion page.
+// The Content Blocks v1 schema defines the blocks-json format.
+// If execution fails, order completion continues without displaying additional content.
+//
+// When a checkout is split into multiple orders, orders contains every order shown on the completion page.
+interface handler {
+  use makeshop:runtime-types/common@1.0.0.{guest-error, shop-metafield-entry};
+  use makeshop:order-snapshot/types@1.0.0.{
+    applied-coupon,
+    order,
+  };
+
+  record input {
+    shop-id: string,
+    event-id: string,
+    checkout-session-uuid: string,
+    // The coupon applied to the entire checkout.
+    applied-coupon: option<applied-coupon>,
+    viewer-user-agent: string,
+    viewer-ip-address: string,
+    // Orders shown on the completion page. This list contains multiple entries for a split order and normally one otherwise. An empty list violates the contract.
+    orders: list<order>,
+    shop-metafields: list<shop-metafield-entry>,
+  }
+
+  // ContentEntry is a machine-readable key-value pair available to the page.
+  // value-json contains a JSON string.
+  record content-entry {
+    key: string,
+    value-json: string,
+  }
+
+  // ContentFragment represents content added to a single placement.
+  // Use "main" as the placement for order_completed_content v1.
+  record content-fragment {
+    placement: string,
+    // A JSON array of blocks that conforms to the Content Blocks schema.
+    blocks-json: string,
+  }
+
+  // Output contains content to add to the order completion page.
+  // Use empty lists for fragments and data when there is no content to add.
+  record output {
+    // Major version of the Content Blocks schema used by blocks-json. This is 1 for v1.
+    schema-version: u32,
+    // Content rendered on the page.
+    fragments: list<content-fragment>,
+    // Machine-readable data available to theme JavaScript and other page integrations.
+    data: list<content-entry>,
+  }
+
+  run: func(input: input) -> result<output, guest-error>;
+}
+
+world order-completed-content-guest {
+  import makeshop:runtime-host/logging@1.0.0;
+  import makeshop:runtime-host/connector@1.0.0;
+  import makeshop:runtime-host/execution@1.0.0;
+  import makeshop:runtime-host/uuid@1.0.0;
+  export handler;
+}

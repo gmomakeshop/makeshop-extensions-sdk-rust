@@ -1,0 +1,51 @@
+[package]
+name = "makeshop-extensions-sdk"
+version = "0.2.1"
+edition.workspace = true
+rust-version.workspace = true
+description = "SDK for writing makeshop Extensions guests as WebAssembly components."
+repository = "https://github.com/gmomakeshop/makeshop-extensions-sdk-rust"
+readme = "README.md"
+keywords = ["makeshop", "extensions", "wasm", "webassembly", "sdk"]
+categories = ["wasm", "web-programming", "api-bindings"]
+license = "Apache-2.0"
+
+# The library name is what you write in your own code. The generated bindings and the
+# attribute macros expand to absolute `::makeshop_extensions::` paths, so renaming this
+# dependency with `package = ` does not work.
+[lib]
+name = "makeshop_extensions"
+
+# Compiles both for the `wasm32-wasip2` component target and for a native host build
+# (the test harness runs your entrypoint natively).
+#
+# `wit-bindgen` runs without its default features: the bundled WIT declares no flags, and
+# every entrypoint is synchronous.
+[dependencies]
+makeshop-extensions-content-blocks = { workspace = true, optional = true }
+makeshop-extensions-sdk-macros = { workspace = true }
+serde.workspace = true
+serde_json.workspace = true
+wit-bindgen = { version = "0.51.0", default-features = false, features = ["macros", "realloc"] }
+
+# Bindings are opt-in per entrypoint contract. Enable exactly one feature: a guest implements
+# one entrypoint, and enabling several would mix their imports into the same component.
+#
+# The `-vN` suffix is the major version of the WIT package, that is the contract version. It
+# moves independently of the crate version. WIT records are type-checked on an exact field
+# match, so a contract is never rewritten in place: a new major arrives as an additional
+# feature, and you migrate by changing this one line in your manifest.
+#
+# There is no unsuffixed alias meaning "the latest contract". An alias would let a plain
+# rebuild change the contract without a manifest change, so always name the version.
+[features]
+finalize-checkout-validation-v1 = []
+order-completed-v1 = []
+# Bundles the Block vocabulary used to build and validate the returned content.
+order-completed-content-v1 = ["dep:makeshop-extensions-content-blocks"]
+
+# Without this, docs.rs would build with no feature enabled and document almost nothing:
+# every entrypoint contract lives behind its own feature. Documenting them together is a
+# docs-only view; a guest still enables exactly one of them.
+[package.metadata.docs.rs]
+all-features = true

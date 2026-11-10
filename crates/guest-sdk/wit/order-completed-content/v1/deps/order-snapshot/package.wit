@@ -1,0 +1,97 @@
+package makeshop:order-snapshot@1.0.0;
+
+interface types {
+  record ordered-product-variation {
+    custom-code: option<string>,
+    // The JAN code registered for this variation.
+    jan-code: option<string>,
+    variation1-item-id: u64,
+    variation1-key: string,
+    variation1-value: string,
+    variation2-item-id: u64,
+    variation2-key: option<string>,
+    variation2-value: option<string>,
+  }
+
+  // ProductKind is the sale programme an item was bought under. It reflects how the
+  // buyer bought it, not what the product master allows: a product that may be
+  // bought either way is repeat-sale only when it was actually bought that way.
+  //
+  // The two kinds never appear in the same checkout.
+  enum product-kind {
+    // Bought on a repeat sale, where the buyer is charged and shipped on a
+    // recurring cycle. This order is its first delivery.
+    repeat-sale,
+    // Bought before its release date, to be shipped once the product is released.
+    reservation,
+  }
+
+  record ordered-product {
+    name: string,
+    // The product code the platform assigns, as a 12-digit zero-padded sequence
+    // number such as "000000000001". Match on this to find the product in an
+    // external system.
+    system-code: string,
+    custom-code: option<string>,
+    // The JAN code registered for the product.
+    //
+    // A product and its variation carry JAN codes independently. To identify what was
+    // actually bought, read variation.jan-code first and fall back to this one.
+    jan-code: option<string>,
+    // The sale programme this item was bought under.
+    // Absent for an ordinary purchase, which belongs to no programme.
+    kind: option<product-kind>,
+    variation: option<ordered-product-variation>,
+    quantity: u32,
+  }
+
+  record buyer {
+    name: string,
+    name-kana: string,
+    zip-code: string,
+    prefecture: string,
+    address1: string,
+    address2: option<string>,
+    tel: string,
+    email: string,
+    company-name: option<string>,
+    company-name-kana: option<string>,
+    department-name: option<string>,
+    // Whether the shop's mail magazine may be sent to the buyer, as set on the buyer's
+    // membership.
+    //
+    // Present exactly when the order has a member-id, and absent for a guest purchase.
+    // The platform does not apply it to what an extension sends the buyer, such as a
+    // mail reserved for the buyer. Check it before sending promotional content.
+    mail-magazine-allowed: option<bool>,
+  }
+
+  record receiver {
+    name: string,
+    name-kana: string,
+    zip-code: string,
+    prefecture: string,
+    address1: string,
+    address2: option<string>,
+    tel: string,
+    company-name: option<string>,
+    company-name-kana: option<string>,
+    department-name: option<string>,
+  }
+
+  record applied-coupon {
+    coupon-code: string,
+    coupon-discount: u64,
+  }
+
+  record order {
+    display-order-number: string,
+    member-id: option<string>,
+    buyer: buyer,
+    receivers: list<receiver>,
+    shop-point-discount: u64,
+    total-price: u64,
+    payment-method-code: string,
+    products: list<ordered-product>,
+  }
+}

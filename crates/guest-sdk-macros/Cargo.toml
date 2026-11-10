@@ -1,0 +1,22 @@
+[package]
+name = "makeshop-extensions-sdk-macros"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Attribute macro for declaring makeshop Extensions entrypoints. Used via makeshop-extensions-sdk."
+repository = "https://github.com/gmomakeshop/makeshop-extensions-sdk-rust"
+readme = "README.md"
+keywords = ["makeshop", "extensions", "wasm", "macro"]
+categories = ["wasm", "development-tools::procedural-macro-helpers"]
+license = "Apache-2.0"
+
+# You never name this library: `makeshop-extensions-sdk` re-exports the macro as
+# `#[makeshop_extensions::hook]` / `#[makeshop_extensions::event]`. Depend on the SDK instead.
+[lib]
+name = "makeshop_extensions_macros"
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.106"
+quote = "1.0.45"
+syn = { version = "2.0.117", features = ["full"] }

@@ -1,0 +1,140 @@
+package makeshop:finalize-checkout-validation@1.0.0;
+
+// A hook that determines whether checkout may be finalized.
+//
+// The decision applies to the entire checkout, even when it is split into multiple orders.
+// planned-orders contains the products assigned to each order that will be created.
+interface handler {
+  use makeshop:runtime-types/common@1.0.0.{guest-error, shop-metafield-entry};
+
+  record checkout-product-variation {
+    custom-code: option<string>,
+    // The JAN code registered for this variation.
+    jan-code: option<string>,
+    variation1-item-id: u64,
+    variation1-key: string,
+    variation1-value: string,
+    variation2-item-id: u64,
+    variation2-key: option<string>,
+    variation2-value: option<string>,
+  }
+
+  // ProductKind is the sale programme an item is being bought under. It reflects how the
+  // buyer is buying it, not what the product master allows: a product that may be
+  // bought either way is repeat-sale only when it is actually bought that way.
+  //
+  // The two kinds never appear in the same checkout.
+  enum product-kind {
+    // Bought on a repeat sale, where the buyer is charged and shipped on a
+    // recurring cycle. The resulting order is its first delivery.
+    repeat-sale,
+    // Bought before its release date, to be shipped once the product is released.
+    reservation,
+  }
+
+  record checkout-product {
+    name: string,
+    // The product code the platform assigns, as a 12-digit zero-padded sequence
+    // number such as "000000000001". Match on this to find the product in an
+    // external system.
+    system-code: string,
+    custom-code: option<string>,
+    // The JAN code registered for the product.
+    //
+    // A product and its variation carry JAN codes independently. To identify what is
+    // actually being bought, read variation.jan-code first and fall back to this one.
+    jan-code: option<string>,
+    // The sale programme this item is being bought under.
+    // Absent for an ordinary purchase, which belongs to no programme.
+    kind: option<product-kind>,
+    variation: option<checkout-product-variation>,
+    quantity: u32,
+  }
+
+  // PlannedOrder represents an order that will be created when checkout is finalized.
+  // Product assignments are final, but an order number has not yet been issued.
+  record planned-order {
+    products: list<checkout-product>,
+  }
+
+  // Buyer contains the information of the person who placed the order, recorded at checkout.
+  record buyer {
+    name: string,
+    name-kana: string,
+    zip-code: string,
+    prefecture: string,
+    address1: string,
+    address2: option<string>,
+    tel: string,
+    email: string,
+    company-name: option<string>,
+    company-name-kana: option<string>,
+    department-name: option<string>,
+  }
+
+  // Receiver contains a shipping destination recorded at checkout.
+  record receiver {
+    name: string,
+    name-kana: string,
+    zip-code: string,
+    prefecture: string,
+    address1: string,
+    address2: option<string>,
+    tel: string,
+    company-name: option<string>,
+    company-name-kana: option<string>,
+    department-name: option<string>,
+  }
+
+  // AppliedCoupon represents a coupon applied to the entire checkout.
+  record applied-coupon {
+    coupon-code: string,
+    coupon-discount: u64,
+  }
+
+  record checkout {
+    member-id: option<string>,
+    buyer: buyer,
+    receivers: list<receiver>,
+    // Orders to be created. This list contains multiple entries for a split order and normally one otherwise. An empty list violates the contract.
+    planned-orders: list<planned-order>,
+    applied-coupon: option<applied-coupon>,
+    // Shop points redeemed for this checkout.
+    shop-point-discount: u64,
+    // Total price of the entire checkout.
+    total-price: u64,
+    payment-method-code: string,
+  }
+
+  record input {
+    shop-id: string,
+    checkout-session-uuid: string,
+    viewer-user-agent: string,
+    viewer-ip-address: string,
+    checkout: checkout,
+    shop-metafields: list<shop-metafield-entry>,
+  }
+
+  // DisplayMessage represents text shown to the buyer.
+  //
+  // It must not contain machine-readable error codes or operational details.
+  // The runtime limits the number and length of messages and removes control characters before display.
+  type display-message = string;
+
+  // Decision determines whether checkout may be finalized.
+  // Messages in fail are shown to the buyer. An empty list displays the default message.
+  variant decision {
+    pass,
+    fail(list<display-message>),
+  }
+
+  run: func(input: input) -> result<decision, guest-error>;
+}
+
+world finalize-checkout-validation-guest {
+  import makeshop:runtime-host/logging@1.0.0;
+  import makeshop:runtime-host/connector@1.0.0;
+  import makeshop:runtime-host/execution@1.0.0;
+  import makeshop:runtime-host/uuid@1.0.0;
+  export handler;
+}

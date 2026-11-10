@@ -1,0 +1,34 @@
+package makeshop:order-completed@1.0.0;
+
+// An event delivered when an order is completed.
+interface handler {
+  use makeshop:runtime-types/common@1.0.0.{guest-error, shop-metafield-entry};
+  use makeshop:event-types/types@1.0.0.{delivery-context, event-metadata, delivery-result};
+  use makeshop:order-snapshot/types@1.0.0.{applied-coupon, order};
+
+  // OrderCompletedData contains the completed order and the coupon applied to the entire checkout.
+  // The checkout session UUID is provided as correlation-id in event-metadata.
+  record order-completed-data {
+    order: order,
+    // The coupon applied to the checkout that produced this event. It is not duplicated in the order.
+    applied-coupon: option<applied-coupon>,
+  }
+
+  record input {
+    context: delivery-context,
+    event: event-metadata,
+    shop-metafields: list<shop-metafield-entry>,
+    data: order-completed-data,
+  }
+
+  deliver: func(input: input) -> result<delivery-result, guest-error>;
+}
+
+world order-completed-guest {
+  import makeshop:runtime-host/logging@1.0.0;
+  import makeshop:runtime-host/connector@1.0.0;
+  import makeshop:runtime-host/execution@1.0.0;
+  import makeshop:runtime-host/uuid@1.0.0;
+  import makeshop:mail/buyer@1.0.0;
+  export handler;
+}

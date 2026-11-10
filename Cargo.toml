@@ -1,0 +1,24 @@
+# Generated file. Do not edit it directly.
+#
+# This contains only the workspace keys inherited by the published crates. crates.io receives
+# each crate manifest after Cargo resolves it; this root exists only to make the snapshot build
+# and test as a standalone workspace.
+
+[workspace]
+members = [
+  "crates/content-blocks",
+  "crates/guest-sdk-macros",
+  "crates/guest-sdk",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.99"
+
+[workspace.dependencies]
+makeshop-extensions-content-blocks = { path = "crates/content-blocks", version = "0.1.1" }
+makeshop-extensions-sdk-macros = { path = "crates/guest-sdk-macros", version = "0.1.0" }
+schemars = "1.2.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
